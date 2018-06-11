@@ -11,7 +11,7 @@ from scipy.stats import gaussian_kde
 
 def kde_plot(df, n_col = 3, outcome_col = None,
              plot_legend = False, cov_factor = 0.25,
-             f_size = (15,15)):
+             f_size = (15,15), n_points = 300):
     '''
     Function to generate KDE plots, optionally grouping by outcome_col
     Inputs:
@@ -21,6 +21,7 @@ def kde_plot(df, n_col = 3, outcome_col = None,
     plot_legend: Boolean. should a legend be included in the plot?
     cov_factor: parameter to pass to scipy.stats.guassian_kde
     f_size: tuple of (x size, y size) to specify size of plot
+    n_points: number of points to be plotted
     '''
 
     if outcome_col is None:
@@ -78,6 +79,7 @@ def kde_plot(df, n_col = 3, outcome_col = None,
 
             xmin = df_features.loc[:, feature_names[v]].min()
             xmax = df_features.loc[:, feature_names[v]].max()
+            step = (xmax - xmin) / (n_points - 1)
 
             if outcome_col is not None:
                 for c in outcome_values:
@@ -85,7 +87,7 @@ def kde_plot(df, n_col = 3, outcome_col = None,
                     density = gaussian_kde(df_features.loc[df[outcome_col] == c , feature_names[v]])
                     density.covariance_factor = lambda : cov_factor
                     density._compute_covariance()
-                    xs = np.arange(xmin, xmax, 0.1)
+                    xs = np.arange(xmin, xmax, step)
                     if (n_row == 1) and (n_col == 1):
                         axarr.plot(xs, density(xs), label = lab)
                         axarr.set_title(feature_names[v])
@@ -115,7 +117,7 @@ def kde_plot(df, n_col = 3, outcome_col = None,
                 density = gaussian_kde(df_features.loc[ : , feature_names[v]])
                 density.covariance_factor = lambda : cov_factor
                 density._compute_covariance()
-                xs = np.arange(xmin, xmax, 0.1)
+                xs = np.arange(xmin, xmax, step)
                 if (n_row == 1) and (n_col == 1):
                     axarr.plot(xs, density(xs))
                     axarr.set_title(feature_names[v])
