@@ -999,3 +999,95 @@ def plot_prec_recall(y_lab, y_pred_prob, cross=False, figsize=(8,5)):
         return(ax, (thresh_cross, rec_cross))
     else:
         return ax
+
+
+def dep_feature_plot(df, n_col=3, dependent_var=None, f_size=(15, 15)):
+    '''
+    Function to generate histogram plots, optionally grouping by outcome_col
+    Inputs:
+    df: pandas dataframe of features to plot
+    n_col: number of columns
+    dependent_var: string specifying the outcome column
+    f_size: tuple of (x size, y size) to specify size of plot
+
+    '''
+
+    if dependent_var is None:
+        raise Exception("dependent variable cannot be None")
+    else:
+        n_features = df.shape[1] - 1
+        feature_names = [x for x in df.columns.values if x != dependent_var]
+        df_features = df.loc[:, feature_names]
+
+    if n_features % n_col == 0:
+        n_row = n_features // n_col
+    else:
+        n_row = n_features // n_col + 1
+
+    plt_y = df.loc[:, dependent_var].values
+
+    f, axarr = plt.subplots(n_row, n_col, figsize=f_size, dpi=80)
+    plot_legend = True
+
+    v = 0
+    for i in np.arange(n_row):
+        for j in np.arange(n_col):
+
+            # turn off axis if empty grids
+            if v >= n_features:
+                if n_row == 1:
+                    axarr[j].axis('off')
+                    continue
+                elif n_col == 1:
+                    axarr[i].axis('off')
+                    continue
+                else:
+                    axarr[i][j].axis('off')
+                    continue
+
+            if (n_row == 1) and (n_col == 1):
+                axarr.spines['right'].set_visible(False)
+                axarr.spines['top'].set_visible(False)
+                axarr.tick_params(axis=u'both', which=u'both', length=5)
+            elif n_row == 1:
+                axarr[j].spines['right'].set_visible(False)
+                axarr[j].spines['top'].set_visible(False)
+                axarr[j].tick_params(axis=u'both', which=u'both', length=5)
+            elif n_col == 1:
+                axarr[i].spines['right'].set_visible(False)
+                axarr[i].spines['top'].set_visible(False)
+                axarr[i].tick_params(axis=u'both', which=u'both', length=5)
+            else:
+                axarr[i][j].spines['right'].set_visible(False)
+                axarr[i][j].spines['top'].set_visible(False)
+                axarr[i][j].tick_params(axis=u'both', which=u'both', length=5)
+
+            plt_x = df_features.loc[:, feature_names[v]].values
+
+            if (n_row == 1) and (n_col == 1):
+                axarr.scatter(plt_x, plt_y, alpha=0.6)
+                axarr.set_title(feature_names[v])
+                axarr.set_ylabel(dependent_var)
+
+            elif n_row == 1:
+                axarr[j].scatter(plt_x, plt_y, alpha=0.6)
+                axarr[j].set_title(feature_names[v])
+                if j == 0: axarr[j].set_ylabel(dependent_var)
+
+            elif n_col == 1:
+                axarr[i].scatter(plt_x, plt_y, alpha=0.6)
+                axarr[i].set_title(feature_names[v])
+                axarr[i].set_ylabel(dependent_var)
+
+            else:
+                axarr[i][j].scatter(plt_x, plt_y, label=None, alpha=0.6)
+                axarr[i][j].set_title(feature_names[v])
+                if j == 0: axarr[i][j].set_ylabel(dependent_var)
+
+            v += 1
+
+    if n_col == 1:
+        f.subplots_adjust(hspace=1)
+    else:
+        f.subplots_adjust(hspace=0.5)
+    # return f
